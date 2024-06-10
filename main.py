@@ -49,25 +49,14 @@ def RemoveNanAndZeros(df):
 
 
 def NormaliseDataAndSmooth(df):
-    smooteddf = pd.DataFrame()
+    smootheddf = pd.DataFrame()
     for col in df:
-        smooteddf[col] = df[col] - df[col].mean() #remove baseline
-        smooteddf[col] = smooteddf[col]/abs(smooteddf[col]).max()
-        smooteddf[col] = savgol_filter(smooteddf[col] ,41, 3) # window size 51, polynomial order 3
-    return smooteddf
+        smootheddf[col] = df[col] - df[col].mean() #remove baseline
+        smootheddf[col] = savgol_filter(smootheddf[col] ,17, 3) # window size 51, polynomial order 3
+        smootheddf[col] = smootheddf[col]/abs(smootheddf[col]).max()
+    return smootheddf
 
-# def findandPlotPeaks(filteredData, thresholdValue):
-#     plt.figure()
-#     for col in filteredData:
-#         peaks = find_peaks(filteredData[col], height=(-thresholdValue, thresholdValue))
-#         # plt.plot(-thresholdValue, "--", color="gray")
-#         # plt.plot(thresholdValue, ":", color="gray")
-#         plt.plot(filteredData[col])
-#         for peak in peaks:
-#             plt.plot(peaks[peak] , filteredData[col][peaks], 'X')
-
-
-def plotAll(df,numtoPlot):
+def plotANumberOfDatasets(df,numtoPlot):
     plt.figure()
     for i , col in enumerate(df):
         x = np.arange(0 ,len(df[col]))
@@ -77,18 +66,40 @@ def plotAll(df,numtoPlot):
         plt.grid(True)
         plt.xlabel('sample No')
         plt.ylabel('Value a.u')
+        plt.show()
         if (i == numtoPlot):
             break
 
-        #plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))
-        #plt.savefig('rollingMonth.png', dpi = 300 ,  bbox_inches='tight')
+def findandplotOnePeak(filteredData, datasetNo):
+    #postive peak
+    negativePeak = []
+    filteredData = filteredData.reset_index(drop=True)
+    # for col in filteredData:
+    peaks, _ = find_peaks(abs(filteredData[datasetNo]), prominence=0.4)
+    negativePeak.append(peaks)
+    plt.plot(filteredData[datasetNo])
+    plt.vlines(peaks, filteredData[datasetNo].min(), filteredData[datasetNo].max(), linestyles='dashed')
+    plt.grid(True)
+    plt.xlabel('sample No')
+    plt.ylabel('Value a.u')
+    plt.title('Dataset ' + str(datasetNo) + ' Peak sample locations 1 = '  + str(peaks[0])+ ' Peak 2 = '+ str(peaks[1]) )
+    plt.savefig('findPeaks.png', dpi=200)    
+    print(negativePeak)
+
+
+def GetPeaksinData(filteredData):
+    #postive peak
+    peakFound = []
+    filteredData = filteredData.reset_index(drop=True)
+    for col in filteredData:
+        peaks, _ = find_peaks(abs(filteredData[col]), prominence=0.4)
+        peakFound.append(peaks)
+    return peakFound
 
 
 
-#%%
 #path to data files
 path = 'datasets/'
-
 
 ###############################################################
 #DATA PREPERATION
@@ -102,29 +113,14 @@ data, droppedData = RemoveNanAndZeros(data)
 #baseline datasets using mean values
 filteredData = NormaliseDataAndSmooth(data) 
 
-#plot 30 datasets to investiagate feetures
-plotAll(filteredData,30)
-
+#plot 10 datasets to investiagate feetures
+plotANumberOfDatasets(filteredData,10)
+plotANumberOfDatasets(data,10)
 
 ###############################################################
 #FEATURE EXTRACTION
-#plot the max and min differtiated dataset to pick the transition points
-def find_Transitions(filteredData,filestoplot):
-    for i, col in enumerate(filteredData):
-        plt.figure()
-        max = filteredData[col].diff().idxmax()
-        min = filteredData[col].diff().idxmin()
-        plt.plot(filteredData[col])
-        plt.axvline(max)
-        plt.axvline(min)
-        if (i == filestoplot):
-            break
-        
+#extract peaks
 
-
-
-
-
-# %%
-find_Transitions(filteredData,0)
+findandplotOnePeak(filteredData,802)
+peaks = GetPeaksinData(filteredData)
 # %%
