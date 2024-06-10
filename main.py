@@ -112,6 +112,7 @@ def GetStats(filteredData, numofPeaks):
     stats['Mean'] = mean
     stats['Peak-to-Peak'] = pk2pk
     stats['No of Peaks'] = peaks
+    stats.to_csv('dataStats.csv')
     return stats
 
 
@@ -142,5 +143,5 @@ findandplotOnePeak(filteredData,801)
 peaks = GetPeaksinData(filteredData)
 
 #get some stats 
-wow = GetStats(filteredData, peaks)
+stats = GetStats(filteredData, peaks)
 # %%
