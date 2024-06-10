@@ -96,6 +96,23 @@ def GetPeaksinData(filteredData):
         peakFound.append(peaks)
     return peakFound
 
+def GetStats(filteredData, numofPeaks):
+    filteredData = filteredData.reset_index(drop=True)
+    stats = pd.DataFrame()
+    std = []
+    mean = []
+    pk2pk = []
+    peakNo =[]
+    for i , col in enumerate(filteredData):
+        std.append(filteredData[col].std())
+        mean.append(filteredData[col].mean())
+        pk2pk.append(abs(filteredData[col].max() - filteredData[col].min()))
+        peakNo.append(peaks[i])
+    stats['Standard Deviation'] = std
+    stats['Mean'] = mean
+    stats['Peak-to-Peak'] = pk2pk
+    stats['No of Peaks'] = peaks
+    return stats
 
 
 #path to data files
@@ -121,6 +138,9 @@ plotANumberOfDatasets(data,10)
 #FEATURE EXTRACTION
 #extract peaks
 
-findandplotOnePeak(filteredData,802)
+findandplotOnePeak(filteredData,801)
 peaks = GetPeaksinData(filteredData)
+
+#get some stats 
+wow = GetStats(filteredData, peaks)
 # %%
